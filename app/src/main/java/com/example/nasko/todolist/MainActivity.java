@@ -1,5 +1,8 @@
 package com.example.nasko.todolist;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -8,12 +11,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import static android.widget.AbsListView.CHOICE_MODE_SINGLE;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-    // initialize UI elements and data structure
+        // initialize UI elements and data structure
         editText = (EditText) findViewById(R.id.userEntry);
         btn = (Button) findViewById(R.id.addBtn);
         list = (ListView) findViewById(R.id.dataList);
@@ -45,9 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Set data
         list.setAdapter(adapter);
+        list.setChoiceMode(1);
 
-        arrayList.add("Did this work?");
-        arrayList.add("Did this work?");
+
+        //test data
         arrayList.add("Did this work?");
         adapter.notifyDataSetChanged();
 
@@ -63,10 +73,70 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //test data
+        // Create onclick activity
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
+                // When clicked, show a toast with the TextView text
+                Toast.makeText(getApplicationContext(), "Selected " + "'" + ((TextView) view).getText() + "'",
+                        Toast.LENGTH_SHORT).show();
+
+                showInputBox(arrayList.get(position), position);
+
+                //close keyboard
 
 
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
+
+                // When clicked, populate textview for editing
+
+                //editText.setText(((TextView) view).getText());
+
+
+            }
+        });
     }
+
+        public void showInputBox(String oldItem, final int index){
+            final Dialog dialog=new Dialog(MainActivity.this);
+            dialog.setTitle("Input Box");
+            dialog.setContentView(R.layout.edit_box);
+            TextView txtMessage=(TextView)dialog.findViewById(R.id.txtmessage);
+            txtMessage.setText("Update item");
+            txtMessage.setTextColor(Color.parseColor("#ff2222"));
+            final EditText editText=(EditText)dialog.findViewById(R.id.txtinput);
+            editText.setText(oldItem);
+
+            Button bt=(Button)dialog.findViewById(R.id.btdone);
+            Button bt2 =(Button)dialog.findViewById(R.id.btdelete);
+
+            // edit button
+            bt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    arrayList.set(index,editText.getText().toString());
+                    adapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                }
+            });
+
+            // Delete button
+            bt2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    arrayList.remove(index);
+                    adapter.notifyDataSetChanged();
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        }
+
+
+
+
+
 
 
     @Override
