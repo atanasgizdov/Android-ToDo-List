@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">ToDoList</string>
-    <string name="action_settings">Settings</string>
+    <string name="add_entry">Add Entry</string>
+    <string name="modify_entry">Modify Entry</string>
+    <string name="delete_entry">Delete Entry</string>
+    <string name="save_list">Save ToDo List</string>
+    <string name="close">Close App</string>
 </resources>

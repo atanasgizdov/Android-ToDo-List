@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private ListView list;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> arrayList;
+    private int currentlyselectedindex;
+    private String currentlyselectedvalue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
 
                 showInputBox(arrayList.get(position), position);
+
+                // grab values and store globally in case person wants to use menu to edit
+
+                currentlyselectedindex = position;
+                currentlyselectedvalue = arrayList.get(position);
 
                 //close keyboard
 
@@ -144,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+
     }
 
     @Override
@@ -154,8 +162,41 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.add_entry) {
+            // grab entry and add to list
+            arrayList.add(editText.getText().toString());
+            // notify UI of change
+            adapter.notifyDataSetChanged();
+        }
+
+        if (id == R.id.modify_entry) {
+            // grab entry from global and modify in list
+            arrayList.set(currentlyselectedindex,currentlyselectedvalue.toString());
+
+            // notify UI of change
+            adapter.notifyDataSetChanged();
+        }
+
+        if (id == R.id.delete_entry) {
+            // grab entry and add to list
+            if (currentlyselectedindex != 0) {
+                arrayList.remove(currentlyselectedindex);
+                // notify UI of change
+                adapter.notifyDataSetChanged();
+            }
+            else {
+                Toast.makeText(getApplicationContext(), "Please select a valid entry",
+                        Toast.LENGTH_SHORT).show();
+            }
+
+        }
+
+        if (id == R.id.save_list) {
             return true;
+        }
+
+        if (id == R.id.close_app) {
+            this.finishAffinity();
         }
 
         return super.onOptionsItemSelected(item);
