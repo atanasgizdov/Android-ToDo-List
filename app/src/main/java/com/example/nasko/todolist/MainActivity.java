@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView list;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> arrayList;
-    private int currentlyselectedindex;
+    private Integer currentlyselectedindex;
     private String currentlyselectedvalue;
 
     @Override
@@ -170,17 +170,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.modify_entry) {
-            // grab entry from global and modify in list
-            arrayList.set(currentlyselectedindex,currentlyselectedvalue.toString());
+            if (currentlyselectedindex != null) {
+                // grab entry from global and modify in list
+                showInputBox(currentlyselectedvalue, currentlyselectedindex);
 
-            // notify UI of change
-            adapter.notifyDataSetChanged();
-        }
+                // notify UI of change
+                adapter.notifyDataSetChanged();
+            }
+            else {
+                Toast.makeText(getApplicationContext(), "Please select a valid entry",
+                        Toast.LENGTH_SHORT).show();
+            }
+    }
 
         if (id == R.id.delete_entry) {
             // grab entry and add to list
-            if (currentlyselectedindex != 0) {
-                arrayList.remove(currentlyselectedindex);
+            if (currentlyselectedindex != null) {
+                showInputBox(currentlyselectedvalue, currentlyselectedindex);
                 // notify UI of change
                 adapter.notifyDataSetChanged();
             }
@@ -196,7 +202,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.close_app) {
-            this.finishAffinity();
+            return true;
+            //this.finishAffinity();
         }
 
         return super.onOptionsItemSelected(item);
