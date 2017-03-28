@@ -2,8 +2,10 @@ package com.example.nasko.todolist;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static android.widget.AbsListView.CHOICE_MODE_SINGLE;
 
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> arrayList;
     private Integer currentlyselectedindex;
     private String currentlyselectedvalue;
+    //static final int PICK_CONTACT_REQUEST = 1;
+    private TextToSpeech mtts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+       // initialize text to speech, check status and set locale
+
+        //http://stackoverflow.com/questions/3058919/text-to-speechtts-android
+
+        mtts = new TextToSpeech (MainActivity.this, new TextToSpeech.OnInitListener() {
+                public void onInit (int status){
+                    if (status == TextToSpeech.SUCCESS){
+                        int result=mtts.setLanguage(Locale.US);
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "Sorry but text to speech failed - please check your device and try again",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+        });
 
 
         // initialize UI elements and data structure
@@ -105,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+
+
+
         public void showInputBox(String oldItem, final int index){
             final Dialog dialog=new Dialog(MainActivity.this);
             dialog.setTitle("Input Box");
@@ -123,7 +148,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     arrayList.set(index,editText.getText().toString());
+
                     adapter.notifyDataSetChanged();
+                    mtts.speak("hello",TextToSpeech.QUEUE_FLUSH,null);
                     dialog.dismiss();
                 }
             });
