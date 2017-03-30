@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView list;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> arrayList;
+    private List<ListItem> listitem;
     private Integer currentlyselectedindex;
     private String currentlyselectedvalue;
     private TextToSpeech mtts;
@@ -73,53 +74,63 @@ public class MainActivity extends AppCompatActivity {
         list.setChoiceMode(1);
 
 
-        //test data
-        arrayList.add("Did this work?");
-        adapter.notifyDataSetChanged();
+        //test data for testing purposes
+        //arrayList.add("Did this work?");
+        //adapter.notifyDataSetChanged();
 
-        Log.d("Insert: ", "Inserting ..");
+
+        //delete all records for testing purposes
+        //db.deleteAllContacts();
+
+        //test data for testing purposes
+        /* Log.d("Insert: ", "Inserting ..");
         db.addRecord(new ListItem("Test1"));
         db.addRecord(new ListItem("Test"));
-        db.addRecord(new ListItem("Atanas"));
+        db.addRecord(new ListItem("Atanas")); */
 
-        // write to log test data
 
-        // Reading all contacts
+        // Reading all contacts to display on start up
         Log.d("Reading: ", "Reading all contacts..");
-        List<ListItem> listitem = db.getAllContacts();
+        listitem = db.getAllContacts();
 
+        // loop through and write to log to display table data
         for (ListItem cn : listitem) {
+
             String log = "Id: "+cn.getID()+" ,Name: " + cn.getListItem();
             // Writing Contacts to log
             Log.d("Name: ", log);
         }
 
+        for (ListItem cn : listitem) {
+            String entry = cn.getListItem();
+            // grab entry and add to list
+            arrayList.add(entry.toString());
+            // notify UI of change
+            adapter.notifyDataSetChanged();
+        }
 
-        //handle insertion to list
+        //handle button insertion to list - "Add button"
         btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                // grab entry and add to list
-                arrayList.add(editText.getText().toString());
-                // notify UI of change
-                adapter.notifyDataSetChanged();
+            public void onClick(View view) {
+                addRecord();
             }
         });
 
         // Create onclick activity
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-                // When clicked, show a toast with the TextView text
-                Toast.makeText(getApplicationContext(), "Selected " + "'" + ((TextView) view).getText() + "'",
-                        Toast.LENGTH_SHORT).show();
 
+
+                // send user to edit/delete box
                 showInputBox(arrayList.get(position), position);
 
                 // grab values and store globally in case person wants to use menu to edit
 
                 currentlyselectedindex = position;
                 currentlyselectedvalue = arrayList.get(position);
+
+
 
                 //close keyboard
 
@@ -136,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    // initialize text to speech
     public void initializeTTS() {
         mtts = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
             public void onInit(int status) {
@@ -151,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-        public void showInputBox(String oldItem, final int index){
+    public void showInputBox(String oldItem, final int index){
             final Dialog dialog=new Dialog(MainActivity.this);
             dialog.setTitle("Input Box");
             dialog.setContentView(R.layout.edit_box);
@@ -168,8 +179,23 @@ public class MainActivity extends AppCompatActivity {
             bt.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //update entry in string array
                     arrayList.set(index,editText.getText().toString());
-
+                    //grab object
+                    ListItem item_edit = listitem.get(index);
+                    //update object in object array
+                    item_edit.setListItem(editText.getText().toString());
+                    //update item in DB
+                    editRecordFromDB(item_edit);
+                    // log for DB debugging purposes
+                    for (ListItem cn : listitem) {
+                        String entry = cn.getListItem();
+                        // grab entry and add to list
+                        String log = "Id: " + item_edit.getID() + " ,Name: " + item_edit.getListItem();
+                        // Writing Contacts to log
+                        Log.d("Name: ", log);
+                    }
+                    //update view
                     adapter.notifyDataSetChanged();
                     // announce
                     mtts.speak("You have edited" + " " + editText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
@@ -181,7 +207,22 @@ public class MainActivity extends AppCompatActivity {
             bt2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //remove from string array @ passed index
                     arrayList.remove(index);
+                    //grab object
+                    ListItem item_delete = listitem.get(index);
+                    //delete from DB
+                    deleteRecordFromDB(item_delete);
+                    //delete from object array
+                    listitem.remove(index);
+                    // show rows for debugging purposes
+                    for (ListItem cn : listitem) {
+                        String entry = cn.getListItem();
+                        // grab entry and add to list
+                        String log = "Id: " + item_delete.getID() + " ,Name: " + item_delete.getListItem();
+                        // Writing Contacts to log
+                        Log.d("Name: ", log);
+                    }
                     // announce
                     mtts.speak("You have deleted" + " " + editText.getText().toString(),TextToSpeech.QUEUE_FLUSH,null);
                     adapter.notifyDataSetChanged();
@@ -193,10 +234,33 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    // add record
+    public void addRecord (){
+        // grab entry and add to array list of strings
+        arrayList.add(editText.getText().toString());
+        //create new object of type listitem
+        ListItem item = new ListItem(editText.getText().toString());
+        // add to object array so we can track equal object
+        listitem.add(item);
+        //add to DB
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.addRecord(item);
+        // notify UI of change
+        adapter.notifyDataSetChanged();
+}
+    // method to edit from DB
+    public void editRecordFromDB(ListItem listItem){
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.updateContact(listItem);
+    }
 
+    // method to delete from DB
+    public void deleteRecordFromDB(ListItem listItem){
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.deleteContact(listItem);
+    }
 
-
-
+    // menu buttons
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
