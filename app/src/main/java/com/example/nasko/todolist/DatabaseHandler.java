@@ -34,7 +34,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db){
         String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
-                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_LISTITEM + " TEXT,"
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_LISTITEM + " TEXT"
                 + ")";
         db.execSQL(CREATE_TABLE);
     }
@@ -126,6 +126,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_NAME, KEY_ID + " = ?",
                 new String[] { String.valueOf(contact.getID()) });
+        db.close();
+    }
+
+    // Deleting all records aka flush the DB
+    public void deleteAllContacts() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("delete from "+ TABLE_NAME);
         db.close();
     }
 
